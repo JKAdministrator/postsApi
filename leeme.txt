@@ -1,2 +1,13 @@
 
-https://www.youtube.com/watch?v=ngc9gnGgUdA
+Tutorial source: https://www.youtube.com/watch?v=ngc9gnGgUdA
+
+
+
+-- deploy subfolder from /notesapp frolder (my-app = name of the heroku app, path/to/subdirectory is path to server function)
+
+npm install -g heroku
+heroku login
+heroku git:remote -a my-app
+git subtree push --prefix path/to/subdirectory heroku master
+
+git subtree push --prefix path/to/subdirectory heroku master
