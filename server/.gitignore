@@ -1,5 +1,0 @@
-#node packages
-/node_modules
-
-#env variables
-.env
