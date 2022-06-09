@@ -1,5 +1,9 @@
 #node packages
 /node_modules
+/server/node_modules
+/cli/node_modules
 
 #env variables
 .env
+/server/.env
+/client/.env
