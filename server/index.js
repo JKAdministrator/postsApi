@@ -11,7 +11,9 @@ app.use(bodyParser.json({ limi: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limi: "30mb", extended: true }));
 app.use(cors());
 app.use("/posts", postRoutes);
-
+app.use("/", (req, res) => {
+  res.send("Posts API Endpoint");
+});
 const PORT = process.env.PORT || 5000;
 mongoose
   .connect(process.env.CONNECTION_URL, {
