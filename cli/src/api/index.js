@@ -13,3 +13,10 @@ export const deletePost = (id) => {
 export const likePost = (id) => {
   return axios.patch(`${url}/${id}/likePost`);
 };
+
+export const getGoogleUserInfo = (access_token) => {
+  let ret = axios.get(
+    `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+  );
+  return ret;
+};

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import useStyles from "./styles.js";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import { AUTH } from "../../constants/actionTypes.js";
 import {
   Avatar,
   Button,
@@ -10,15 +11,40 @@ import {
   Container,
   TextField,
 } from "@material-ui/core";
-import { GoogleLogin } from "react-google-login";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
 import Input from "./Input.js";
 import Icon from "./Icon.js";
+import { useDispatch } from "react-redux";
+import { auth } from "../../actions/auth.js";
+import { useNavigate } from "react-router-dom";
+import * as api from "../../api";
+
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
+
 const Auth = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const classes = useStyles();
+  const [formData, setFormData] = useState(initialState);
   const [showPassowrd, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
-  const handleSubmit = () => {};
-  const handleChange = () => {};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+  const handleChange = (e) => {
+    setFormData((_prevData) => {
+      return {
+        ..._prevData,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
   const handleShowPassword = () => {
     setShowPassword((_prevState) => {
       return !_prevState;
@@ -29,6 +55,17 @@ const Auth = () => {
       return !_prevState;
     });
   };
+  const authWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const access_token = tokenResponse?.access_token;
+      const { data } = await api.getGoogleUserInfo(access_token);
+      dispatch(auth(access_token, data));
+      navigate("/");
+    },
+    onFailure: (error) => console.log(error),
+    scopes: "https://www.googleapis.com/auth/userinfo.email",
+  });
+
   return (
     <Container component="main" maxWidth="xs">
       <Paper className={classes.paper} elevation={3}>
@@ -41,15 +78,15 @@ const Auth = () => {
             {isSignup && (
               <>
                 <Input
-                  name="firstname"
+                  name="firstName"
                   label="First Name"
                   handleChange={handleChange}
                   autofocus
                   half
                 />
                 <Input
-                  name="firstname"
-                  label="First Name"
+                  name="lastName"
+                  label="Last Name"
                   handleChange={handleChange}
                   half
                 />
@@ -78,22 +115,6 @@ const Auth = () => {
               />
             )}
           </Grid>
-          <GoogleLogin
-            clientId="GOOGLE ID"
-            render={(renderProps) => {
-              <Button
-                className={classes.googleButton}
-                color="primary"
-                fullWidth
-                onClick={renderProps.onClick}
-                disabled={renderProps.disabled}
-                startIcon={<Icon />}
-                variant="contained"
-              >
-                Google Sign In
-              </Button>;
-            }}
-          />
           <Button
             type="submit"
             fullWidth
@@ -103,6 +124,17 @@ const Auth = () => {
           >
             {isSignup ? "Sign Up" : "Sign In"}
           </Button>
+          <Button
+            className={classes.googleButton}
+            color="primary"
+            fullWidth
+            onClick={() => authWithGoogle()}
+            startIcon={<Icon />}
+            variant="contained"
+          >
+            Google Sign In
+          </Button>
+
           <Grid container justifyContent="flex-end">
             <Grid item>
               <Button onClick={switchMode}>
