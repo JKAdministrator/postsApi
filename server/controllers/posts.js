@@ -4,7 +4,6 @@ import PostMessage from "../models/postMessage.js";
 export const getPosts = async (req, res) => {
   try {
     const postMessages = await PostMessage.find();
-    console.log(postMessages);
     res.status(200).json(postMessages);
   } catch (error) {
     res.status(404).json({ message: error.message });
@@ -58,13 +57,23 @@ export const deletePost = async (req, res) => {
 export const likePost = async (req, res) => {
   try {
     const { id: _id } = req.params;
-
+    if (!req.userId) return res.json({ message: "Unauthenticated" });
     const post = await PostMessage.findById(_id);
-    const updatedPost = await PostMessage.findByIdAndUpdate(
-      _id,
-      { likeCount: post.likeCount + 1 },
-      { new: true }
-    );
+
+    const index = post.likes.findIndex((id) => {
+      return id === String(req.userId);
+    });
+    if (index === -1) {
+      post.likes.push(req.userId);
+    } else {
+      post.likes.filter((id) => {
+        return id !== String(req.userId);
+      });
+    }
+    const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, {
+      new: true,
+    });
+
     res.json(updatedPost);
   } catch (error) {
     console.log(error);

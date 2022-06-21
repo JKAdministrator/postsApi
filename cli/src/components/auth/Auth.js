@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import useStyles from "./styles.js";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import { AUTH } from "../../constants/actionTypes.js";
 import {
   Avatar,
   Button,
@@ -9,13 +8,12 @@ import {
   Grid,
   Typography,
   Container,
-  TextField,
 } from "@material-ui/core";
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import Input from "./Input.js";
 import Icon from "./Icon.js";
 import { useDispatch } from "react-redux";
-import { auth } from "../../actions/auth.js";
+import { signinWithGoogle, signin, signup } from "../../actions/auth.js";
 import { useNavigate } from "react-router-dom";
 import * as api from "../../api";
 
@@ -36,6 +34,11 @@ const Auth = () => {
   const [isSignup, setIsSignup] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isSignup) {
+      dispatch(signup(formData, navigate));
+    } else {
+      dispatch(signin(formData, navigate));
+    }
   };
   const handleChange = (e) => {
     setFormData((_prevData) => {
@@ -54,13 +57,12 @@ const Auth = () => {
     setIsSignup((_prevState) => {
       return !_prevState;
     });
+    setShowPassword(false);
   };
   const authWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       const access_token = tokenResponse?.access_token;
-      const { data } = await api.getGoogleUserInfo(access_token);
-      dispatch(auth(access_token, data));
-      navigate("/");
+      dispatch(signinWithGoogle(access_token, navigate));
     },
     onFailure: (error) => console.log(error),
     scopes: "https://www.googleapis.com/auth/userinfo.email",
@@ -121,6 +123,10 @@ const Auth = () => {
             variant="contained"
             color="primary"
             className={classes.submit}
+            onClick={(e) => {
+              console.log("looog");
+              handleSubmit(e);
+            }}
           >
             {isSignup ? "Sign Up" : "Sign In"}
           </Button>
